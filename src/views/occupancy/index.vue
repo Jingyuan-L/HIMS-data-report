@@ -1,27 +1,29 @@
 <template>
   <div class="dashboard-editor-container">
-
+    <span class="page-title">
+      Daily Roon Occupancy Rate 
+    </span>
     <div class="filter-container">
-      <el-input v-model="listQuery.title" placeholder="Title" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-select v-model="listQuery.importance" placeholder="Imp" clearable style="width: 90px" class="filter-item">
-        <el-option v-for="item in importanceOptions" :key="item" :label="item" :value="item" />
+      
+      <el-select v-model="listQuery.query_year" placeholder="Year" clearable style="width: 90px" class="filter-item">
+        <el-option v-for="item in yearOptions" :key="item" :label="item" :value="item" />
       </el-select>
-      <el-select v-model="listQuery.type" placeholder="Type" clearable class="filter-item" style="width: 130px">
-        <el-option v-for="item in calendarTypeOptions" :key="item.key" :label="item.display_name+'('+item.key+')'" :value="item.key" />
+      <el-select v-model="listQuery.query_month" placeholder="Month" clearable style="width: 90px" class="filter-item">
+        <el-option v-for="item in monthOptions" :key="item" :label="item" :value="item" />
       </el-select>
-      <el-select v-model="listQuery.sort" style="width: 140px" class="filter-item" @change="handleFilter">
-        <el-option v-for="item in sortOptions" :key="item.key" :label="item.label" :value="item.key" />
+      <el-select v-model="listQuery.hospital_id" placeholder="Hospital" clearable class="filter-item" style="width: 130px">
+        <el-option v-for="item in hospitalOptions" :key="item.key" :label="item.display_name" :value="item.key" />
       </el-select>
+      
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         Search
       </el-button>
 
     </div>
     
-    <panel-group @handleSetLineChartData="handleSetLineChartData" />
 
     <el-row style="background:#fff;padding:16px 16px 0;margin-bottom:32px;">
-      <bar-chart />
+      <bar-chart :chart-data="this.barChartData" />
     </el-row>
 
   </div>
@@ -29,65 +31,50 @@
 
 <script>
 import BarChart from './components/BarChart'
+import { occupancyList } from '@/api/occupancy'
 
-const calendarTypeOptions = [
-  { key: 'CN', display_name: 'China' },
-  { key: 'US', display_name: 'USA' },
-  { key: 'JP', display_name: 'Japan' },
-  { key: 'EU', display_name: 'Eurozone' }
+const hospitalOptions = [
+  { key: '1', display_name: 'NYU Medical Center' },
+  { key: '2', display_name: 'Rochester General Hospital' },
+  { key: '5', display_name: 'Jasmine Smith Hospital' },
+  { key: '6', display_name: 'Anthony Bennett Hospital' },
+  { key: '7', display_name: 'Jacqueline Jones Hospital' },
+  { key: '8', display_name: 'Lisa Thompson Hospital' },
+  { key: '9', display_name: 'Michael Coleman Hospital' },
+  { key: '10', display_name: 'Gary Davis Hospital' },
+  { key: '11', display_name: 'Lisa Curry Hospital' },
+  { key: '12', display_name: 'Suzanne Olsen Hospital' },
+  { key: '13', display_name: 'Stephen Huynh Hospital' },
+  { key: '14', display_name: 'Rebecca Lamb Hospital' },
+  { key: '15', display_name: 'Beth Smith Hospital' },
+  { key: '16', display_name: 'Brenda Reyes Hospital' },
+  { key: '17', display_name: 'Jonathan Murphy Hospital' },
+  { key: '18', display_name: 'Charles Herring Hospital' },
+  { key: '19', display_name: 'Anthony Martinez Hospital' },
+  { key: '20', display_name: 'Diane Fisher Hospital' },
+  { key: '21', display_name: 'Kyle Bennett Hospital' },
+  { key: '22', display_name: 'David Smith Hospital' },
 ]
-// arr to obj, such as { CN : "China", US : "USA" }
-const calendarTypeKeyValue = calendarTypeOptions.reduce((acc, cur) => {
-  acc[cur.key] = cur.display_name
-  return acc
-}, {})
 
-const lineChartData = {
-  newVisitis: {
-    expectedData: [100, 120, 161, 134, 105, 160, 165],
-    actualData: [120, 82, 91, 154, 162, 140, 145]
-  },
-  messages: {
-    expectedData: [200, 192, 120, 144, 160, 130, 140],
-    actualData: [180, 160, 151, 106, 145, 150, 130]
-  },
-  purchases: {
-    expectedData: [80, 100, 121, 104, 105, 90, 100],
-    actualData: [120, 90, 100, 138, 142, 130, 130]
-  },
-  shoppings: {
-    expectedData: [130, 140, 141, 142, 145, 150, 160],
-    actualData: [120, 82, 91, 154, 162, 140, 130]
-  }
-}
+
 
 export default {
-  name: 'RoomOccupancy',
+  name: 'MedecalExpense',
   components: {
     BarChart,
   },
-  filters: {
-    statusFilter(status) {
-      const statusMap = {
-        published: 'success',
-        draft: 'info',
-        deleted: 'danger'
-      }
-      return statusMap[status]
-    },
-    typeFilter(type) {
-      return calendarTypeKeyValue[type]
-    }
-  },
+  
   data() {
     return {
-      lineChartData: lineChartData.newVisitis,
+      barChartData: {occupiedData: [], totalData: []},
+      hospitalOptions,
+      yearOptions: [...Array(22).keys()].map((el, i) => 2000 + i),
+      monthOptions: [...Array(12).keys()].map((el, i) => 1 + i),
       // listLoading: true,
       listQuery: {
-        importance: undefined,
-        title: undefined,
-        type: undefined,
-        
+        query_year: 2020,
+        query_month: 11,
+        hospital_id: 1,
       },
     }
   },
@@ -95,22 +82,16 @@ export default {
     this.getList()
   },
   methods: {
-    handleSetLineChartData(type) {
-      this.lineChartData = lineChartData[type]
-    },
+
     getList() {
-      this.listLoading = true
-      fetchList(this.listQuery).then(response => {
-        this.list = response.data.items
-        this.total = response.data.total
-        // Just to simulate the time of the request
-        setTimeout(() => {
-          this.listLoading = false
-        }, 1.5 * 1000)
+      occupancyList(this.listQuery).then(response => {
+        this.barChartData.occupiedData = response.data.occupiedData
+        this.barChartData.totalData = response.data.totalData
+        // console.log(this.barChartData.occupiedData)
+        
       })
     },
     handleFilter() {
-      
       this.getList()
     },
   }
@@ -118,6 +99,12 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.page-title {
+  margin-bottom: 20px;
+  text-align: center;
+  font-size: 20px;
+  display: block;
+}
 .dashboard-editor-container {
   padding: 32px;
   background-color: rgb(240, 242, 245);

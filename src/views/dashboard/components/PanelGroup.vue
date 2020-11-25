@@ -14,7 +14,7 @@
           <div class="card-panel-text">
             Yesterday Patients
           </div>
-          <count-to :start-val="0" :end-val="102400" :duration="2600" class="card-panel-num" />
+          <count-to :start-val="0" :end-val="this.patients_num" :duration="2600" class="card-panel-num" />
         </div>
       </div>
     </el-col>
@@ -27,7 +27,7 @@
           <div class="card-panel-text">
             Yesterday Room Occupancy
           </div>
-          <count-to :start-val="0" :end-val="81212" :duration="3000" class="card-panel-num" />
+          <count-to :start-val="0" :end-val="this.occupancy_rate" :duration="3000" class="card-panel-num" />%
         </div>
       </div>
     </el-col>
@@ -40,7 +40,7 @@
           <div class="card-panel-text">
             Yesterday Medical Expense
           </div>
-          <count-to :start-val="0" :end-val="9280" :duration="3200" class="card-panel-num" />
+          <count-to :start-val="0" :end-val="this.expense_num" :duration="3200" class="card-panel-num" />
         </div>
       </div>
     </el-col>
@@ -50,12 +50,47 @@
 
 <script>
 import CountTo from 'vue-count-to'
-
+import { dashboardData } from '@/api/dashboard'
+ 
 export default {
   components: {
     CountTo
   },
+  data() {
+    return {
+      patients_num: 0,
+      occupancy_rate: 0,
+      expense_num: 0,
+      cur_date: "",
+
+      listQuery: {
+        
+      },
+    }
+  },
+  created() {
+    this.setDate()
+    this.getData()
+  },
   methods: {
+    getData() {
+      dashboardData(this.listQuery).then(response => {
+        this.patients_num = response.data.patients_num
+        this.occupancy_rate = response.data.occupancy_rate
+        this.expense_num = response.data.expense_num
+        console.log(response)
+        // Just to simulate the time of the request
+
+      })
+    },
+    setDate() {
+      let day = new Date()
+      day.setTime(day.getTime() - 24*60*60*1000)
+      let dayMon=(day.getMonth() + 1) >= 10 ? day.getMonth()+1 : '0' + (day.getMonth() + 1)
+      let dayDat=(day.getDate() + 1) >= 10 ? day.getDate() : '0' + (day.getDate())
+      let s = day.getFullYear() + "-" + dayMon + "-" + dayDat;
+      this.cur_date = s
+    }
     
   }
 }

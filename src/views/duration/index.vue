@@ -1,5 +1,8 @@
 <template>
   <div class="app-container">
+    <span class="page-title">
+      Average Disease Duration 
+    </span>
     <div class="filter-container">
       <el-input v-model="listQuery.info" placeholder="Disease Description" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
@@ -9,7 +12,6 @@
 
     <el-table
       :key="tableKey"
-      v-loading="listLoading"
       :data="list"
       border
       fit
@@ -62,7 +64,7 @@ export default {
       tableKey: 0,
       list: null,
       total: 0,
-      listLoading: true,
+      listLoading: false,
       listQuery: {
         info: "",
       },
@@ -77,10 +79,7 @@ export default {
       durationList(this.listQuery).then(response => {
         this.list = response.data.items
         console.log(response)
-        // Just to simulate the time of the request
-        setTimeout(() => {
-          this.listLoading = false
-        }, 1.5 * 1000)
+
       })
     },
     handleFilter() {
@@ -91,3 +90,19 @@ export default {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+.page-title {
+  margin-bottom: 20px;
+  text-align: center;
+  font-size: 20px;
+  display: block;
+}
+.dashboard-editor-container {
+  padding: 32px;
+  background-color: rgb(240, 242, 245);
+  position: relative;
+
+}
+
+</style>
