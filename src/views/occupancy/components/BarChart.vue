@@ -8,6 +8,28 @@ require('echarts/theme/macarons') // echarts theme
 import resize from './mixins/resize'
 
 const animationDuration = 6000
+const hospitalOptions = [
+  'NYU Medical Center', 
+  'Rochester General Hospital',
+  'Jasmine Smith Hospital',
+  'Anthony Bennett Hospital',
+  'Jacqueline Jones Hospital',
+  'Lisa Thompson Hospital',
+  'Michael Coleman Hospital',
+  'Gary Davis Hospital',
+  'Lisa Curry Hospital',
+  'Suzanne Olsen Hospital',
+  'Stephen Huynh Hospital',
+  'Rebecca Lamb Hospital',
+  'Beth Smith Hospital',
+  'Brenda Reyes Hospital',
+  'Jonathan Murphy Hospital',
+  'Charles Herring Hospital',
+  'Anthony Martinez Hospital',
+  'Diane Fisher Hospital',
+  'Kyle Bennett Hospital',
+  'David Smith Hospital',
+]
 
 export default {
   mixins: [resize],
@@ -77,16 +99,22 @@ export default {
         },
         xAxis: [{
           type: 'category',
-          data: [...Array(30).keys()].map((el, i) => 1 + i),
+          data: hospitalOptions,
           axisTick: {
             alignWithLabel: true
-          }
+          },
+          axisLabel: {
+            margin: 15,//距离
+            interval: 0,
+            rotate: 30,//倾斜度
+          },
+        triggerEvent: true
         }],
         yAxis: [{
           type: 'value',
-          axisTick: {
-            show: false
-          }
+          // axisTick: {
+          //   show: false
+          // }
         }],
         series: [{
           name: 'occupied',
